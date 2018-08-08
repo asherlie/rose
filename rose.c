@@ -12,7 +12,7 @@ bool strtoi(const char* str, int* i){
       return true;
 }
 
-int main(int argc, char** argv){
+int main(int argc, char* argv[]){
       pid_t pid;
       if(argc < 3 || !strtoi(argv[1], &pid)){
             puts("enter: pid regex");
@@ -28,4 +28,5 @@ int main(int argc, char** argv){
                   printf("(%5s @ %p): \"%s\"\n", which_rgn(m.mapped_rgn, m.s_mmap[i].addr, NULL), m.s_mmap[i].addr, m.s_mmap[i].value);
       free_mem_rgn(&m.mapped_rgn);
       free_mem_map(&m);
+      regfree(&reg);
 }
