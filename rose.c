@@ -5,7 +5,7 @@
 
 #include <vmem_access.h>
 
-#define ROSE_VER "1.0.0"
+#define ROSE_VER "1.1.0"
 
 bool strtoi(const char* str, int* i){
       char* res;
@@ -42,10 +42,22 @@ int main(int argc, char* argv[]){
       regcomp(&reg, rstr, 0);
       struct mem_map m;
       mem_map_init(&m, pid, false);
-      populate_mem_map(&m, BOTH, true, false, 4);
-      for(unsigned int i = 0; i < m.size; ++i)
-            if(!regexec(&reg, m.s_mmap[i].value, 0, NULL, 0))
-                  printf("(%5s @ %p): \"%s\"\n", which_rgn(m.mapped_rgn, m.s_mmap[i].addr, NULL), m.s_mmap[i].addr, m.s_mmap[i].value);
+      populate_mem_map(&m, BOTH, true, ints, 4);
+      char int_buf[12];
+      char* cmp_str = NULL;
+      void* addr;
+      for(unsigned int i = 0; i < m.size; ++i){
+            if(ints){
+                  snprintf(int_buf, 11, "%i", m.i_mmap[i].value);
+                  cmp_str = int_buf;
+            }
+            else cmp_str = m.s_mmap[i].value;
+            addr = (ints) ? m.i_mmap[i].addr : m.s_mmap[i].addr;
+            if(!regexec(&reg, cmp_str, 0, NULL, 0)){
+                  printf("(%5s @ %p): ", which_rgn(m.mapped_rgn, addr, NULL), addr);
+                  (ints) ? printf("%i\n", m.i_mmap[i].value) : printf("\"%s\"\n", cmp_str);
+            }
+      }
       free_mem_rgn(&m.mapped_rgn);
       free_mem_map(&m);
       regfree(&reg);
