@@ -6,9 +6,9 @@
 
 bool strtoi(const char* str, int* i){
       char* res;
-      unsigned int r = (unsigned int)strtol(str, &res, 10);
+      int r = (int)strtol(str, &res, 10);
       if(*res)return false;
-      if(i)*i = (int)r;
+      *i = r;
       return true;
 }
 
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]){
       regex_t reg;
       regcomp(&reg, argv[2], 0);
       struct mem_map m;
-      mem_map_init(&m, pid, true);
+      mem_map_init(&m, pid, false);
       populate_mem_map(&m, BOTH, true, false, 4);
       for(unsigned int i = 0; i < m.size; ++i)
             if(!regexec(&reg, m.s_mmap[i].value, 0, NULL, 0))
