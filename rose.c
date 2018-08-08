@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <regex.h>
 #include <sys/types.h>
+#include <string.h>
 
 #include <vmem_access.h>
+
+#define ROSE_VER "1.0.0"
 
 bool strtoi(const char* str, int* i){
       char* res;
@@ -13,13 +16,30 @@ bool strtoi(const char* str, int* i){
 }
 
 int main(int argc, char* argv[]){
-      pid_t pid;
-      if(argc < 3 || !strtoi(argv[1], &pid)){
+      pid_t pid = 0;
+      char* rstr = NULL;
+      bool ints = false, reg_set = false;
+      for(int i = 1; i < argc; ++i){
+            if(!strncmp(argv[i], "-i", 3)){
+                  ints = true;
+                  continue;
+            }
+            if(!strncmp(argv[i], "-v", 3)){
+                  printf("rose %s using %s\n", ROSE_VER, MEMCARVE_VER);
+                  return 0;
+            }
+            if(!pid && strtoi(argv[i], &pid))continue;
+            if(!reg_set){
+                  rstr = argv[i];
+                  reg_set = true;
+            }
+      }
+      if(!pid || !reg_set){
             puts("enter: pid regex");
             return 1;
       }
       regex_t reg;
-      regcomp(&reg, argv[2], 0);
+      regcomp(&reg, rstr, 0);
       struct mem_map m;
       mem_map_init(&m, pid, false);
       populate_mem_map(&m, BOTH, true, false, 4);
