@@ -18,12 +18,14 @@ bool strtoi(const char* str, int* i){
 int main(int argc, char* argv[]){
       pid_t pid = 0;
       char* rstr = NULL;
-      bool ints = false, reg_set = false;
+      bool ints = false, num = false, reg_set = false;
       for(int i = 1; i < argc; ++i){
             if(*argv[i] == '-' && argv[i][1]){
                   switch(argv[i][1]){
                         case 'i': ints = true; continue;
                         case 'v': printf("rose %s using %s\n", ROSE_VER, MEMCARVE_VER); return 0;
+                        case 'n': num = true; continue;
+                        case 'h': continue;
                   }
             }
             if(!pid && strtoi(argv[i], &pid))continue;
@@ -53,6 +55,7 @@ int main(int argc, char* argv[]){
             else cmp_str = m.s_mmap[i].value;
             addr = (ints) ? m.i_mmap[i].addr : m.s_mmap[i].addr;
             if(!regexec(&reg, cmp_str, 0, NULL, 0)){
+                  if(num)printf("%i ", n);
                   printf("(%5s @ %p): ", which_rgn(m.mapped_rgn, addr, NULL), addr);
                   (ints) ? printf("%i\n", m.i_mmap[i].value) : printf("\"%s\"\n", cmp_str);
                   ++n;
