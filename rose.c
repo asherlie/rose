@@ -20,13 +20,11 @@ int main(int argc, char* argv[]){
       char* rstr = NULL;
       bool ints = false, reg_set = false;
       for(int i = 1; i < argc; ++i){
-            if(!strncmp(argv[i], "-i", 3)){
-                  ints = true;
-                  continue;
-            }
-            if(!strncmp(argv[i], "-v", 3)){
-                  printf("rose %s using %s\n", ROSE_VER, MEMCARVE_VER);
-                  return 0;
+            if(*argv[i] == '-' && argv[i][1]){
+                  switch(argv[i][1]){
+                        case 'i': ints = true; continue;
+                        case 'v': printf("rose %s using %s\n", ROSE_VER, MEMCARVE_VER); return 0;
+                  }
             }
             if(!pid && strtoi(argv[i], &pid))continue;
             if(!reg_set){
@@ -46,6 +44,7 @@ int main(int argc, char* argv[]){
       char int_buf[12];
       char* cmp_str = NULL;
       void* addr;
+      unsigned int n = 0;
       for(unsigned int i = 0; i < m.size; ++i){
             if(ints){
                   snprintf(int_buf, 11, "%i", m.i_mmap[i].value);
@@ -56,8 +55,10 @@ int main(int argc, char* argv[]){
             if(!regexec(&reg, cmp_str, 0, NULL, 0)){
                   printf("(%5s @ %p): ", which_rgn(m.mapped_rgn, addr, NULL), addr);
                   (ints) ? printf("%i\n", m.i_mmap[i].value) : printf("\"%s\"\n", cmp_str);
+                  ++n;
             }
       }
+      printf("%i matches found\n", n);
       free_mem_rgn(&m.mapped_rgn);
       free_mem_map(&m);
       regfree(&reg);
