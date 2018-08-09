@@ -5,7 +5,7 @@
 
 #include <vmem_access.h>
 
-#define ROSE_VER "1.1.0"
+#define ROSE_VER "1.1.1"
 
 bool strtoi(const char* str, int* i){
       char* res;
@@ -13,6 +13,12 @@ bool strtoi(const char* str, int* i){
       if(*res)return false;
       *i = r;
       return true;
+}
+
+void p_help(char* name){
+      printf("usage: %s <pid> <regex> {[-i] [-v] [-n] [-h]}\n    -i : search "
+             "through integers\n    -v : print version\n    -n : number each "
+             "match as it's printed\n    -h : print this help\n", name);
 }
 
 int main(int argc, char* argv[]){
@@ -25,7 +31,7 @@ int main(int argc, char* argv[]){
                         case 'i': ints = true; continue;
                         case 'v': printf("rose %s using %s\n", ROSE_VER, MEMCARVE_VER); return 0;
                         case 'n': num = true; continue;
-                        case 'h': continue;
+                        case 'h': p_help(*argv); return 0;
                   }
             }
             if(!pid && strtoi(argv[i], &pid))continue;
@@ -35,7 +41,8 @@ int main(int argc, char* argv[]){
             }
       }
       if(!pid || !reg_set){
-            puts("enter: pid regex");
+            fprintf(stderr, "ENTER PID FOLLOWED BY REGEX\n");
+            p_help(*argv);
             return 1;
       }
       regex_t reg;
