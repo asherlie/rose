@@ -5,7 +5,7 @@
 
 #include <vmem_access.h>
 
-#define ROSE_VER "1.1.1"
+#define ROSE_VER "1.1.2"
 
 bool strtoi(const char* str, int* i){
       char* res;
@@ -24,10 +24,16 @@ void p_help(char* name){
 int main(int argc, char* argv[]){
       pid_t pid = 0;
       char* rstr = NULL;
-      bool ints = false, num = false, reg_set = false;
+      // adtnl is only used if stack or heap is set manually
+      bool ints = false, num = false, reg_set = false, adtnl = false;
+      int rgn = BOTH;
       for(int i = 1; i < argc; ++i){
             if(*argv[i] == '-' && argv[i][1]){
                   switch(argv[i][1]){
+                        // heap and stack manual
+                        case 'S': rgn = STACK; continue;
+                        case 'H': rgn = HEAP; continue;
+                        case 'A': adtnl = true; continue;
                         case 'i': ints = true; continue;
                         case 'v': printf("rose %s using %s\n", ROSE_VER, MEMCARVE_VER); return 0;
                         case 'n': num = true; continue;
@@ -49,7 +55,8 @@ int main(int argc, char* argv[]){
       regcomp(&reg, rstr, 0);
       struct mem_map m;
       mem_map_init(&m, pid, false);
-      populate_mem_map(&m, BOTH, true, ints, 4);
+      // if rgn == BOTH, rgn hasn't been set manually and we can ignore adtnl
+      populate_mem_map(&m, rgn, (rgn == BOTH || adtnl), ints, 4);
       char int_buf[12];
       char* cmp_str = NULL;
       void* addr;
@@ -60,11 +67,11 @@ int main(int argc, char* argv[]){
                   cmp_str = int_buf;
             }
             else cmp_str = m.s_mmap[i].value;
-            addr = (ints) ? m.i_mmap[i].addr : m.s_mmap[i].addr;
+            addr = ints ? m.i_mmap[i].addr : m.s_mmap[i].addr;
             if(!regexec(&reg, cmp_str, 0, NULL, 0)){
                   if(num)printf("%i ", n);
-                  printf("(%5s @ %p): ", which_rgn(m.mapped_rgn, addr, NULL), addr);
-                  (ints) ? printf("%i\n", m.i_mmap[i].value) : printf("\"%s\"\n", cmp_str);
+                  printf("[%5s @ %p]: ", which_rgn(m.mapped_rgn, addr, NULL), addr);
+                  ints ? printf("%i\n", m.i_mmap[i].value) : printf("\"%s\"\n", cmp_str);
                   ++n;
             }
       }
