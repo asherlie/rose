@@ -5,7 +5,7 @@
 
 #include <vmem_access.h>
 
-#define ROSE_VER "1.1.2"
+#define ROSE_VER "1.1.3"
 
 bool strtoi(const char* str, int* i){
       char* res;
@@ -16,7 +16,9 @@ bool strtoi(const char* str, int* i){
 }
 
 void p_help(char* name){
-      printf("usage: %s <pid> <regex> {[-i] [-v] [-n] [-h]}\n    -i : search "
+      printf("usage: %s <pid> <regex> {[-S] [-H] [-A] [-i] [-v] [-n] [-h]}\n"
+            "    -S : stack only mode\n    -H : heap only mode\n    -A : use unmarked"
+            " memory in stack/heap only mode\n    -i : search "
              "through integers\n    -v : print version\n    -n : number each "
              "match as it's printed\n    -h : print this help\n", name);
 }
