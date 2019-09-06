@@ -1,7 +1,8 @@
-CXX=gcc
+CC=gcc
+CFLAGS=-lmemcarve -Wall -Wextra -Wpedantic -Werror -std=c99 -lpthread
+
 all: rose
-rose:
-	$(CXX) rose.c -lmemcarve -o rose -Wall -Wextra -Wpedantic -Werror -std=c99 -lpthread
+rose: rose.c
 
 clean:
 	rm -f rose
