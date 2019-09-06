@@ -5,7 +5,7 @@
 
 #include <vmem_access.h>
 
-#define ROSE_VER "1.1.3"
+#define ROSE_VER "1.2.0"
 
 bool strtoi(const char* str, int* i){
       char* res;
@@ -26,13 +26,12 @@ void p_help(char* name){
 int main(int argc, char* argv[]){
       pid_t pid = 0;
       char* rstr = NULL;
-      // adtnl is only used if stack or heap is set manually
+      /* adtnl is only used if stack or heap is set manually */
       bool ints = false, num = false, reg_set = false, adtnl = false;
       int rgn = BOTH;
       for(int i = 1; i < argc; ++i){
             if(*argv[i] == '-' && argv[i][1]){
                   switch(argv[i][1]){
-                        // heap and stack manual
                         case 'S': rgn = STACK; continue;
                         case 'H': rgn = HEAP; continue;
                         case 'A': adtnl = true; continue;
@@ -57,15 +56,20 @@ int main(int argc, char* argv[]){
       regcomp(&reg, rstr, 0);
       struct mem_map m;
       mem_map_init(&m, pid, false);
-      // if rgn == BOTH, rgn hasn't been set manually and we can ignore adtnl
+      /* if rgn == BOTH, rgn hasn't been set manually and we can ignore adtnl */
       populate_mem_map(&m, rgn, (rgn == BOTH || adtnl), ints, 4);
+
+      /* TODO: iterate through i_mmap_hash struct for faster search */
+      flatten_i_mmap_hash(&m);
+      regularize_i_mmap_hash(&m);
+
       char int_buf[12];
       char* cmp_str = NULL;
       void* addr;
       unsigned int n = 0;
       for(unsigned int i = 0; i < m.size; ++i){
             if(ints){
-                  snprintf(int_buf, 11, "%i", m.i_mmap[i].value);
+                  snprintf(int_buf, 11, "%i", *m.i_mmap[i].value);
                   cmp_str = int_buf;
             }
             else cmp_str = m.s_mmap[i].value;
@@ -73,7 +77,7 @@ int main(int argc, char* argv[]){
             if(!regexec(&reg, cmp_str, 0, NULL, 0)){
                   if(num)printf("%i ", n);
                   printf("[%5s @ %p]: ", which_rgn(m.mapped_rgn, addr, NULL), addr);
-                  ints ? printf("%i\n", m.i_mmap[i].value) : printf("\"%s\"\n", cmp_str);
+                  ints ? printf("%i\n", *m.i_mmap[i].value) : printf("\"%s\"\n", cmp_str);
                   ++n;
             }
       }
