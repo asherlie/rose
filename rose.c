@@ -5,7 +5,7 @@
 
 #include <vmem_access.h>
 
-#define ROSE_VER "1.2.0"
+#define ROSE_VER "1.2.1"
 
 bool strtoi(const char* str, int* i){
       char* res;
@@ -60,8 +60,10 @@ int main(int argc, char* argv[]){
       populate_mem_map(&m, rgn, (rgn == BOTH || adtnl), ints, 4);
 
       /* TODO: iterate through i_mmap_hash struct for faster search */
-      flatten_i_mmap_hash(&m);
-      regularize_i_mmap_hash(&m);
+      if(ints){
+            flatten_i_mmap_hash(&m);
+            regularize_i_mmap_hash(&m);
+      }
 
       char int_buf[12];
       char* cmp_str = NULL;
